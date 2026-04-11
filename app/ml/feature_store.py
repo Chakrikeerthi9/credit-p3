@@ -4,20 +4,6 @@ import numpy as np
 TARGET = "TARGET"
 ID_COL = "SK_ID_CURR"
 
-CATEGORICAL_COLS = [
-    "NAME_CONTRACT_TYPE",
-    "CODE_GENDER",
-    "FLAG_OWN_CAR",
-    "FLAG_OWN_REALTY",
-    "NAME_INCOME_TYPE",
-    "NAME_EDUCATION_TYPE",
-    "NAME_FAMILY_STATUS",
-    "NAME_HOUSING_TYPE",
-    "OCCUPATION_TYPE",
-    "WEEKDAY_APPR_PROCESS_START",
-    "ORGANIZATION_TYPE"
-]
-
 def load_data(path: str) -> pd.DataFrame:
     df = pd.read_csv(path)
     print(f"Loaded: {df.shape[0]} rows x {df.shape[1]} cols")
@@ -55,9 +41,11 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def encode_categoricals(df: pd.DataFrame) -> pd.DataFrame:
-    for col in CATEGORICAL_COLS:
-        if col in df.columns:
-            df[col] = df[col].astype("category").cat.codes
+    obj_cols = df.select_dtypes(include=["object"]).columns.tolist()
+    obj_cols = [c for c in obj_cols if c not in [TARGET, ID_COL]]
+    for col in obj_cols:
+        df[col] = df[col].astype("category").cat.codes
+    print(f"Encoded {len(obj_cols)} categorical columns")
     return df
 
 def impute_nulls(df: pd.DataFrame) -> pd.DataFrame:
@@ -68,8 +56,7 @@ def impute_nulls(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def get_features_and_target(df: pd.DataFrame):
-    drop = [TARGET, ID_COL]
-    drop = [c for c in drop if c in df.columns]
+    drop = [c for c in [TARGET, ID_COL] if c in df.columns]
     X = df.drop(columns=drop)
     y = df[TARGET] if TARGET in df.columns else None
     return X, y
@@ -83,7 +70,6 @@ def run_pipeline(path: str):
     df = impute_nulls(df)
     X, y = get_features_and_target(df)
     print(f"Final features: {X.shape[1]}")
-    print(f"Feature names: {list(X.columns[:10])}...")
     return X, y
 
 if __name__ == "__main__":
@@ -91,3 +77,4 @@ if __name__ == "__main__":
     print(f"X shape: {X.shape}")
     print(f"y shape: {y.shape}")
     print(f"Class balance: {y.mean():.1%} defaults")
+    print(f"Dtypes: {X.dtypes.value_counts().to_dict()}")
