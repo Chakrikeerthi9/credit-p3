@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+asyncpg
+pandas
+numpy
+scikit-learn
+xgboost
+lightgbm
+shap
+joblib
+python-multipart
+httpx
+streamlit
+plotly
+python-dotenv
