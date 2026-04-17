@@ -6,7 +6,7 @@ import plotly.express as px
 import json
 import io
 
-API_URL = "http://localhost:8001"
+API_URL = "https://credit-risk-api-rnzx.onrender.com"
 
 st.set_page_config(
     page_title="Credit Risk ML",
