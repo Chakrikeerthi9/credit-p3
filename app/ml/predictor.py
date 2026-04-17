@@ -30,12 +30,32 @@ def get_decision(score: float) -> str:
     else:
         return "DENY"
 
+def map_input_to_features(input_dict: dict) -> dict:
+    mapped = {}
+    mapped["NAME_CONTRACT_TYPE"] = input_dict.get("loan_type", "Cash loans")
+    mapped["CODE_GENDER"] = "M"
+    mapped["FLAG_OWN_CAR"] = input_dict.get("owns_car", "N")
+    mapped["FLAG_OWN_REALTY"] = input_dict.get("owns_property", "N")
+    mapped["AMT_INCOME_TOTAL"] = input_dict.get("income_total", 0)
+    mapped["AMT_CREDIT"] = input_dict.get("loan_amount", 0)
+    mapped["AMT_ANNUITY"] = input_dict.get("loan_amount", 0) / 20
+    mapped["AMT_GOODS_PRICE"] = input_dict.get("loan_amount", 0) * 0.9
+    mapped["DAYS_BIRTH"] = -input_dict.get("age_years", 30) * 365
+    mapped["DAYS_EMPLOYED"] = -input_dict.get("employment_years", 0) * 365
+    mapped["NAME_EDUCATION_TYPE"] = input_dict.get("education", "Higher education")
+    mapped["NAME_FAMILY_STATUS"] = input_dict.get("family_status", "Married")
+    mapped["NAME_INCOME_TYPE"] = "Working"
+    mapped["EXT_SOURCE_2"] = input_dict.get("ext_source_2", 0.5)
+    mapped["EXT_SOURCE_3"] = input_dict.get("ext_source_2", 0.5) * 0.9
+    return mapped
+
 def predict_single(input_dict: dict) -> dict:
     global _xgb_model, _lgb_model, _metadata, _feature_names
     if _xgb_model is None:
         load_models()
 
-    df = pd.DataFrame([input_dict])
+    mapped = map_input_to_features(input_dict)
+    df = pd.DataFrame([mapped])
     df = fix_anomalies(df)
     df = engineer_features(df)
     df = encode_categoricals(df)
@@ -64,21 +84,15 @@ def predict_single(input_dict: dict) -> dict:
 
 if __name__ == "__main__":
     result = predict_single({
-        "NAME_CONTRACT_TYPE": "Cash loans",
-        "CODE_GENDER": "M",
-        "FLAG_OWN_CAR": "N",
-        "FLAG_OWN_REALTY": "Y",
-        "CNT_CHILDREN": 0,
-        "AMT_INCOME_TOTAL": 135000,
-        "AMT_CREDIT": 500000,
-        "AMT_ANNUITY": 25000,
-        "AMT_GOODS_PRICE": 450000,
-        "DAYS_BIRTH": -12000,
-        "DAYS_EMPLOYED": -2000,
-        "NAME_EDUCATION_TYPE": "Higher education",
-        "NAME_FAMILY_STATUS": "Married",
-        "NAME_INCOME_TYPE": "Working",
-        "EXT_SOURCE_2": 0.52,
-        "EXT_SOURCE_3": 0.48
+        "loan_type": "Cash loans",
+        "owns_car": "N",
+        "owns_property": "Y",
+        "income_total": 135000,
+        "loan_amount": 500000,
+        "age_years": 35,
+        "employment_years": 4,
+        "education": "Higher education",
+        "family_status": "Married",
+        "ext_source_2": 0.52
     })
     print("Result:", result)
