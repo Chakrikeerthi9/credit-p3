@@ -2,7 +2,6 @@ venv/
 .env
 __pycache__/
 *.pyc
-*.pkl
 *.parquet
 data/
 .DS_Store
